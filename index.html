@@ -1,0 +1,56 @@
+import React, { useEffect, useState } from 'react';
+import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
+import StudentDashboard from './pages/StudentDashboard';
+import Navbar from './components/Navbar';
+
+function App(){
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('ws_user') || 'null'));
+
+  useEffect(() => {
+    // initialize sample data if not exists
+    const key = 'ws_data_v1';
+    if (!localStorage.getItem(key)){
+      const sample = {
+        jobs: [
+          { id: 'job-1', title: 'Library Assistant', description: 'Help shelve books and assist students.', hours_per_week: 6, createdAt: Date.now() },
+          { id: 'job-2', title: 'Lab Helper', description: 'Assist lab technicians with equipment setup.', hours_per_week: 8, createdAt: Date.now() }
+        ],
+        applications: [
+          { id: 'app-1', jobId: 'job-1', studentName: 'Alice Doe', studentEmail: 'alice@example.com', cover: 'I love libraries!', status: 'approved', appliedAt: Date.now() }
+        ],
+        timesheets: [
+          { id: 'ts-1', jobId: 'job-1', studentName: 'Alice Doe', date: '2025-10-15', hours: 3, note: 'Checked in books', status: 'approved', feedback: 'Good work' }
+        ]
+      };
+      localStorage.setItem(key, JSON.stringify(sample));
+    }
+  }, []);
+
+  function handleLogin(role, name){
+    const u = { role, name: name || (role === 'admin' ? 'Admin' : 'Student') };
+    localStorage.setItem('ws_user', JSON.stringify(u));
+    setUser(u);
+  }
+  function handleLogout(){
+    localStorage.removeItem('ws_user');
+    setUser(null);
+  }
+
+  return (
+    <div className="app">
+      <Navbar user={user} onLogout={handleLogout} />
+      <div className="container">
+        {!user ? (
+          <Login onLogin={handleLogin} />
+        ) : user.role === 'admin' ? (
+          <AdminDashboard user={user} />
+        ) : (
+          <StudentDashboard user={user} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
